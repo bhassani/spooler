@@ -1,3 +1,5 @@
+//https://github.com/MicrosoftDocs/win32/blob/docs/desktop-src/printdocs/printing-and-print-spooler-functions.md
+
 /*
 One of the most important pieces
 of the program is the call of the function
