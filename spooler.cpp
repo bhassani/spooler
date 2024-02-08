@@ -96,18 +96,14 @@ seems to be required here for a complete
 explanation, which might reveal further
 interesting possibilities and functions in the
 world of printing
-
-
-
-
-
 */
 
-#include <>
-
+#include <windows.h>
+#pragma comment(lib,"Winspool.lib")
 
 /*
-spooler.exe -t \\\\target\\Printer1
+
+Usage: spooler.exe -t \\\\target\\Printer1
 	    -s file.exe
 	    -d remote.exe
 */
